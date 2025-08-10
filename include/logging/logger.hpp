@@ -19,12 +19,12 @@ public:
       spdlog::level::level_enum level,
       fmt::format_string<Args...> fmt,
       Args&&... args) {
-     
-      logger->log(loc, level, fmt, std::forward<Args>(args)...);
+
+      logger_sm -> log(loc, level, fmt, std::forward<Args>(args)...);
   }
 
 private:
-  static std::shared_ptr<spdlog::logger> logger;
+  static std::shared_ptr<spdlog::logger> logger_sm;
 };
 
 /// initialize logging for the application

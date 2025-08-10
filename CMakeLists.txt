@@ -8,6 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_subdirectory(external/spdlog)
 add_subdirectory(src/logging)
 add_subdirectory(src/utils)
+add_subdirectory(src/indexer)
 
 add_executable(
   fast_lsp
@@ -19,6 +20,7 @@ target_link_libraries(
   PRIVATE
   logging
   utils
+  indexer
 )
 
 

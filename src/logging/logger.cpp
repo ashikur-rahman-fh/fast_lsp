@@ -10,7 +10,7 @@
 namespace logging {
 
 // initialize static instance logger
-std::shared_ptr<spdlog::logger> Logger::logger = nullptr;
+std::shared_ptr<spdlog::logger> Logger::logger_sm = nullptr;
 
 void Logger::init(const std::string& logfile,
     spdlog::level::level_enum level) {
@@ -19,11 +19,11 @@ void Logger::init(const std::string& logfile,
     auto file_sink = 
       std::make_shared<spdlog::sinks::basic_file_sink_mt>(logfile, false);
 
-    logger = std::make_shared<spdlog::logger>("FastLspLogger", file_sink);
-    logger -> set_level(level);
-    logger -> set_pattern("%Y-%m-%d %H:%M:%S.%f %l PID %P TID %t %s:%# %! %v");
+    logger_sm = std::make_shared<spdlog::logger>("FastLspLogger", file_sink);
+    logger_sm -> set_level(level);
+    logger_sm -> set_pattern("%Y-%m-%d %H:%M:%S.%f %l PID %P TID %t %s:%# %! %v");
 
-    spdlog::register_logger(logger);
+    spdlog::register_logger(logger_sm);
 
     LOG_INFO("Logger initialized");
   } catch (const spdlog::spdlog_ex& ex) {
@@ -40,7 +40,9 @@ void init() {
     std::cerr << "Home directory not found. Cannot initialize logger." << std::endl;
     std::exit(EXIT_FAILURE);
   }
-  const std::filesystem::path logfile = "fast_lsp.log";
+
+  const std::filesystem::path logfile = std::filesystem::path(cmn::FAST_LSP_DIR) /
+    std::filesystem::path(cmn::FAST_LSP_LOG_FILE);
 
   try {
     Logger::init(home / logfile, spdlog::level::info);
