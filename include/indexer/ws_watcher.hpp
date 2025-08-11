@@ -1,4 +1,8 @@
+#ifndef INDEXER_WS_WATCHER_HPP
+#define INDEXER_WS_WATCHER_HPP
+
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <vector>
 #include <unordered_set>
@@ -42,12 +46,13 @@ private:
   FileState state_m;
 };
 
+typedef std::shared_ptr<File> File_sp;
 
 struct FileHash {
-  std::size_t operator() (const File& file) const noexcept;
+  std::size_t operator() (File_sp file) const noexcept;
 };
 
-typedef std::unordered_set<File, FileHash> FileSetType;
+typedef std::unordered_set<File_sp, FileHash> FileSetType;
 
 class Workspace {
 public:
@@ -58,24 +63,26 @@ public:
   void Crawl();
   
   /// returns the the files vector
-  std::vector<File> GetFiles();
+  std::vector<File_sp> GetFiles();
   
   /// returns the root of the workspace
   std::string GetRoot() const;
   
   /// add a file to the workspace
-  void AddFile(const File& file);
+  void AddFile(File_sp file);
   
   /// remove a file from the workspace
-  void RemoveFile(const File& file);
+  void RemoveFile(File_sp file);
 
   /// modify file with a new file
-  void ModifyFile(const File& prev, const File& next);
+  void ModifyFile(File_sp prev, File_sp next);
 
 private:
   std::string root_m;
   FileSetType files_m;
-  std::queue<FileSetType::iterator> indexQueue_m;
+  std::queue<File_sp> indexQueue_m;
 };
 
 } // namespace indexer ends
+
+#endif

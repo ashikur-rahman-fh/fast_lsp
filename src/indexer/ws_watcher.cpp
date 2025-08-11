@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -42,8 +43,8 @@ bool File::operator != (const File& other) const {
   return path_m != other.path_m;
 }
 
-std::size_t FileHash::operator() (const File& file) const noexcept {
-  return std::hash<std::string> {} (file.GetPath());
+std::size_t FileHash::operator() (File_sp file) const noexcept {
+  return std::hash<std::string> {} (file -> GetPath());
 }
 
 
@@ -57,60 +58,61 @@ void Workspace::Crawl() {
   
   if (!fs::exists(root_m) || !fs::is_directory(root_m)) {
     LOG_ERR("Workspace root {} is not a valid directory.", root_m);
+    std::exit(EXIT_FAILURE);
   }
 
   for (const auto& fs_file : fs::recursive_directory_iterator(root_m)) {
     if (fs::is_regular_file(fs_file.status())) {
       std::string extension = fs_file.path().extension().string();
       if (cmn::IsCFile(extension) || cmn::IsCppFile(extension)) {
-        AddFile(fs_file.path().string());
+        AddFile(std::make_shared<File> (fs_file.path().string()));
       }
     }
   }
 }
 
-std::vector<File> Workspace::GetFiles() {
-  return std::vector<File> (files_m.begin(), files_m.end());
+std::vector<File_sp> Workspace::GetFiles() {
+  return std::vector<File_sp> (files_m.begin(), files_m.end());
 }
 
 std::string Workspace::GetRoot() const {
   return root_m;
 }
 
-void Workspace::AddFile(const File& file) {
-  LOG_DEBUG("Adding {} to workspace.", file.GetPath());
+void Workspace::AddFile(File_sp file) {
+  LOG_DEBUG("Adding {} to workspace.", file -> GetPath());
   if (files_m.contains(file)) { 
-    LOG_ERR("File {} is already in the workspace.", file.GetPath());
+    LOG_ERR("File {} is already in the workspace.", file -> GetPath());
   }
 
   auto [it, inserted] = files_m.insert(file);
-  if (inserted && it -> GetState() == FileState::DIRTY) {
-    indexQueue_m.push(it);
-    LOG_DEBUG("File {} is inserted to the index queue", it -> GetPath());
+  if (inserted && (*it) -> GetState() == FileState::DIRTY) {
+    indexQueue_m.push(*it);
+    LOG_DEBUG("File {} is inserted to the index queue", (*it) -> GetPath());
   }
 }
 
-void Workspace::RemoveFile(const File& file) {
-  LOG_DEBUG("Removing {} from workspace.", file.GetPath());
+void Workspace::RemoveFile(File_sp file) {
+  LOG_DEBUG("Removing {} from workspace.", file -> GetPath());
   if (!files_m.contains(file)) {
-    LOG_ERR("File {} is not found in the workspace.", file.GetPath());
+    LOG_ERR("File {} is not found in the workspace.", file -> GetPath());
   }
 
   files_m.erase(files_m.find(file));
 }
 
-void Workspace::ModifyFile(const File& prev, const File& next) {
-  LOG_DEBUG("Updating {} with {}.", prev.GetPath(), next.GetPath());
+void Workspace::ModifyFile(File_sp prev, File_sp next) {
+  LOG_DEBUG("Updating {} with {}.", prev -> GetPath(), next -> GetPath());
   if (files_m.contains(prev)) {
     files_m.erase(files_m.find(prev));
   } else {
-    LOG_ERR("File {} is not found in the workspace.", prev.GetPath());
+    LOG_ERR("File {} is not found in the workspace.", prev -> GetPath());
   }
 
   auto [it, inserted] = files_m.insert(next);
-  if (inserted && it -> GetState() == FileState::DIRTY) {
-    indexQueue_m.push(it);
-    LOG_DEBUG("File {} is inserted to the index queue", it -> GetPath());
+  if (inserted && (*it) -> GetState() == FileState::DIRTY) {
+    indexQueue_m.push(*it);
+    LOG_DEBUG("File {} is inserted to the index queue", (*it) -> GetPath());
   }
 }
 

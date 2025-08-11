@@ -36,7 +36,7 @@ void InitFastLsp() {
   const std::string home = GetHomeDirectory();
   if (home.empty()) {
     std::cerr << "Can not find home directory. Initialization failed." << std::endl;
-    exit(EXIT_FAILURE);
+    std::exit(EXIT_FAILURE);
   }
   const std::filesystem::path homeDir = home;
   const std::filesystem::path fastLspDir = FAST_LSP_DIR;
