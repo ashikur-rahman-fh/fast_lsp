@@ -2,6 +2,7 @@ add_library(
   indexer
   indexer.cpp
   ws_watcher.cpp
+  lexer.cpp
 )
 
 target_link_libraries(
