@@ -11,6 +11,7 @@ set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
 
 add_subdirectory(external/spdlog)
+add_subdirectory(external/json)
 add_subdirectory(src/logging)
 add_subdirectory(src/utils)
 add_subdirectory(src/indexer)
@@ -24,6 +25,7 @@ target_link_libraries(
   fast_lsp
   PRIVATE
   Threads::Threads
+  nlohmann_json::nlohmann_json
   logging
   utils
   indexer
