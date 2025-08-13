@@ -16,6 +16,10 @@ add_subdirectory(src/logging)
 add_subdirectory(src/utils)
 add_subdirectory(src/indexer)
 
+# test
+add_subdirectory(external/googletest)
+add_subdirectory(tests)
+
 add_executable(
   fast_lsp
   src/fast_lsp.cpp

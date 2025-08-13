@@ -8,6 +8,7 @@ add_library(
 target_link_libraries(
   indexer
   logging
+  utils
 )
 
 target_include_directories(
